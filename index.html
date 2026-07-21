@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>여행 일본어 회화 연습</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --indigo:#1B2A4A; --indigoMid:#2E4372; --indigoSoft:#41598C;
+    --paper:#F3EEDF; --card:#FBF8EF; --sumi:#292319;
+    --vermilion:#D84C36; --matcha:#6E8A4F; --gold:#C1912F;
+    --line:#E1D8C2; --mute:#8C8471;
+  }
+  *{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html,body{ margin:0; height:100%; }
+  body{
+    background:var(--indigo);
+    font-family:'Noto Sans KR',-apple-system,BlinkMacSystemFont,sans-serif;
+    color:var(--sumi);
+    display:flex; justify-content:center;
+  }
+  .app{
+    width:100%; max-width:460px; background:var(--paper);
+    height:100dvh; display:flex; flexDirection:column; flex-direction:column;
+    position:relative; overflow:hidden;
+  }
+  .ja{ font-family:'Noto Sans JP','Noto Sans KR',sans-serif; }
+  button{ font-family:inherit; cursor:pointer; }
+  .hidden{ display:none !important; }
+
+  /* 공통 화면 */
+  .pad{ flex:1; overflow-y:auto; padding:40px 22px; }
+  .eyebrow{ font-size:13px; color:var(--gold); font-weight:700; letter-spacing:2px; }
+  h1.title{ margin:6px 0; font-size:26px; color:var(--indigo); font-weight:700; line-height:1.3; }
+  p.lead{ margin:0 0 26px; color:var(--mute); font-size:13.5px; line-height:1.6; }
+
+  /* 키 입력 */
+  .field{ display:block; width:100%; border:1px solid var(--line); border-radius:12px;
+    padding:13px 14px; font-size:15px; background:var(--card); color:var(--sumi); }
+  .field:focus{ outline:2px solid var(--indigoSoft); }
+  .primary{ width:100%; margin-top:12px; border:none; border-radius:12px; padding:15px;
+    background:var(--vermilion); color:#fff; font-weight:700; font-size:15px; }
+  .primary:disabled{ background:var(--line); color:var(--mute); }
+  .note{ font-size:12px; color:var(--mute); line-height:1.6; margin-top:14px;
+    border-top:1px dashed var(--line); padding-top:14px; }
+  .note a{ color:var(--indigoMid); }
+  .err{ color:var(--vermilion); font-size:12.5px; margin-top:10px; }
+
+  /* 시나리오 카드 */
+  .card-btn{ display:flex; align-items:center; gap:15px; text-align:left; width:100%;
+    background:var(--card); border:1px solid var(--line); border-radius:16px;
+    padding:16px 18px; margin-bottom:12px; }
+  .card-btn:active{ transform:scale(.98); }
+  .ico{ width:52px; height:52px; border-radius:13px; background:var(--paper);
+    border:1px solid var(--line); display:flex; align-items:center; justify-content:center;
+    font-size:26px; flex-shrink:0; }
+
+  /* 헤더 */
+  header{ background:var(--indigo); color:var(--paper); padding:14px 16px;
+    display:flex; align-items:center; gap:10px; flex-shrink:0; }
+  .hbtn{ background:transparent; border:1px solid var(--indigoSoft); color:var(--paper);
+    border-radius:8px; padding:6px 9px; font-size:11px; }
+  .hbtn.round{ width:34px; height:34px; font-size:16px; padding:0; }
+  .hbtn.on{ background:var(--vermilion); border-color:var(--vermilion); }
+
+  /* 대화 */
+  #chatArea{ flex:1; overflow-y:auto; padding:16px 14px 8px; display:flex;
+    flex-direction:column; gap:12px; }
+  .msg{ animation:rise .28s ease both; }
+  .shop{ align-self:flex-start; max-width:86%; }
+  .bubble{ background:var(--card); border:1px solid var(--line);
+    border-radius:4px 14px 14px 14px; padding:12px 14px; }
+  .bubble .jatext{ font-size:17px; line-height:1.5; color:var(--sumi); font-weight:500; }
+  .reveal{ margin-top:9px; padding-top:9px; border-top:1px dashed var(--line); }
+  .pron{ font-size:13px; color:var(--vermilion); font-weight:500; }
+  .trans{ font-size:13px; color:var(--mute); margin-top:3px; }
+  .row{ display:flex; gap:8px; margin-top:10px; }
+  .mini{ background:transparent; border:1px solid var(--line); color:var(--indigoMid);
+    border-radius:7px; padding:5px 10px; font-size:11.5px; font-weight:500; }
+  .fb{ font-size:11.5px; color:var(--matcha); background:#EEF2E6; border:1px solid #DAE3C8;
+    border-radius:8px; padding:6px 10px; margin-bottom:6px; line-height:1.5; }
+  .user{ align-self:flex-end; max-width:82%; background:var(--indigo); color:var(--paper);
+    border-radius:14px 4px 14px 14px; padding:11px 14px; font-size:16px; line-height:1.5; }
+  .typing{ align-self:flex-start; background:var(--card); border:1px solid var(--line);
+    border-radius:4px 14px 14px 14px; padding:12px 14px; display:flex; gap:5px; }
+  .dot{ width:6px; height:6px; border-radius:50%; background:var(--indigoSoft);
+    display:inline-block; animation:blink 1.2s infinite; }
+  .chaterr{ align-self:center; color:var(--vermilion); font-size:12.5px;
+    background:#FBE9E5; padding:8px 12px; border-radius:8px; }
+
+  /* 입력바 */
+  .inputbar{ flex-shrink:0; background:var(--card); border-top:1px solid var(--line);
+    padding:10px 12px 14px; }
+  .listening{ font-size:12px; color:var(--vermilion); margin-bottom:8px; min-height:16px; }
+  .inrow{ display:flex; gap:8px; align-items:flex-end; }
+  .mic{ flex-shrink:0; width:46px; height:46px; border-radius:50%; border:none;
+    background:var(--indigo); color:#fff; font-size:20px; }
+  .mic.rec{ background:var(--vermilion); animation:pulse 1.4s infinite; }
+  .send{ flex-shrink:0; height:46px; padding:0 16px; border-radius:12px; border:none;
+    background:var(--vermilion); color:#fff; font-weight:700; font-size:14px; }
+  .send:disabled{ background:var(--line); color:var(--mute); }
+
+  @keyframes pulse{ 0%,100%{ box-shadow:0 0 0 0 rgba(216,76,54,.5);} 50%{ box-shadow:0 0 0 14px rgba(216,76,54,0);} }
+  @keyframes rise{ from{ opacity:0; transform:translateY(8px);} to{ opacity:1; transform:none;} }
+  @keyframes blink{ 0%,80%,100%{ opacity:.25;} 40%{ opacity:1;} }
+  @media (prefers-reduced-motion:reduce){ .msg,.dot,.mic.rec{ animation:none; } }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- 1) API 키 입력 -->
+  <section id="keyScreen" class="pad">
+    <div class="eyebrow">日本旅行・会話れんしゅう</div>
+    <h1 class="title">여행 일본어,<br />말하면서 익히기</h1>
+    <p class="lead">시작하려면 본인의 Anthropic API 키가 필요해요. 키는 저장하지 않고 이 세션에서만 사용합니다. 브라우저를 닫으면 사라져요.</p>
+    <input id="keyInput" class="field ja" type="password" placeholder="sk-ant-... 로 시작하는 키" autocomplete="off" />
+    <button id="keyBtn" class="primary">시작하기</button>
+    <div id="keyErr" class="err hidden"></div>
+    <div class="note">
+      🔑 키 발급: <a href="https://console.anthropic.com/settings/keys" target="_blank" rel="noopener">console.anthropic.com</a> 에 로그인 → API Keys → Create Key.<br />
+      각자 자기 키를 넣으므로, 사용한 만큼만 각자에게 청구돼요. 키가 브라우저 밖으로 나가는 곳은 Anthropic 서버뿐입니다.
+    </div>
+  </section>
+
+  <!-- 2) 시나리오 선택 -->
+  <section id="selectScreen" class="pad hidden">
+    <div class="eyebrow">どこで はなす？</div>
+    <h1 class="title">상황을 골라주세요</h1>
+    <p class="lead">마이크에 일본어로 말하면 점원이 일본어로 답해요. 발음·뜻은 각 대사에서 버튼으로 열어볼 수 있어요.</p>
+    <div id="scenarioList"></div>
+    <div class="note">💡 마이크는 일본어 인식으로 고정돼 있어, 한글로 잘못 받아쓰는 일이 없어요. 틀려도 괜찮으니 편하게 말해보세요.</div>
+  </section>
+
+  <!-- 3) 대화 -->
+  <section id="chatScreen" class="hidden" style="flex:1; display:flex; flex-direction:column; min-height:0;">
+    <header>
+      <button id="backBtn" class="hbtn round" aria-label="상황 바꾸기">‹</button>
+      <div style="flex:1;">
+        <div id="hTitle" class="ja" style="font-weight:700; font-size:17px;"></div>
+        <div id="hSub" style="font-size:11.5px; color:#B9C3DA;"></div>
+      </div>
+      <button id="speakToggle" class="hbtn on">🔊 자동읽기</button>
+      <button id="restartBtn" class="hbtn round" aria-label="처음부터">↻</button>
+    </header>
+
+    <div id="chatArea"></div>
+
+    <div class="inputbar">
+      <div id="listening" class="listening ja"></div>
+      <div class="inrow">
+        <button id="micBtn" class="mic" aria-label="일본어로 말하기">🎤</button>
+        <input id="chatInput" class="field ja" style="flex:1; border-radius:12px;" placeholder="마이크로 말하거나 직접 입력" />
+        <button id="sendBtn" class="send" disabled>전송</button>
+      </div>
+      <div id="micNote" class="note hidden" style="border:none; padding-top:6px; margin-top:0;"></div>
+    </div>
+  </section>
+
+</div>
+
+<script>
+const MODEL = "claude-haiku-4-5-20251001"; // 저렴한 모델. 더 자연스러운 응답을 원하면 "claude-sonnet-5" 로 바꾸세요.
+
+const C = { vermilion:"#D84C36" };
+let apiKey = null;
+let scenario = null;
+let messages = [];      // {role, japanese, pronunciation, translation, feedback}
+let apiMessages = [];   // {role, content}
+let autoSpeak = true;
+let loading = false;
+let recording = false;
+let recog = null;
+
+const SCENARIOS = {
+  restaurant:{ emoji:"🍜", ja:"レストラン", ko:"식당", desc:"자리 안내부터 주문, 계산까지",
+    role:"당신은 일본의 작은 식당 점원입니다. 자리 안내, 주문 받기, 추천, 계산을 담당합니다." },
+  cafe:{ emoji:"☕", ja:"カフェ", ko:"카페", desc:"음료 주문, 사이즈, 매장/포장",
+    role:"당신은 일본의 카페 점원입니다. 음료 주문, 사이즈 확인, 매장/포장 여부, 계산을 담당합니다." },
+  conbini:{ emoji:"🏪", ja:"コンビニ", ko:"편의점", desc:"계산, 데우기, 봉투, 젓가락",
+    role:"당신은 일본의 편의점 점원입니다. 계산, 도시락 데우기 여부, 봉투/젓가락 필요 여부를 확인합니다." },
+};
+const START_TRIGGER = "（店員として、お客さんに最初の一言を話しかけてください）";
+
+function systemPrompt(sc){
+  return `당신은 일본 여행 회화 연습을 돕는 롤플레이 파트너입니다.
+역할: ${sc.role}
+
+규칙:
+- 항상 그 상황의 점원으로서 자연스러운 일본어로만 말합니다.
+- 상대는 일본어 초급 학습자입니다. 쉬운 단어와 짧은 문장을 쓰고, 한 번에 한 가지만 물어보세요.
+- 대화를 자연스럽게 이어가되, 상황이 마무리되면(계산·배웅 인사) 자연스럽게 끝맺으세요.
+- 반드시 아래 JSON 형식 하나만 출력하세요. 코드펜스나 설명 문장을 절대 덧붙이지 마세요.
+
+{
+  "japanese": "점원으로서 할 일본어 대사",
+  "pronunciation": "위 일본어의 한글 발음 표기",
+  "translation": "위 일본어의 자연스러운 한국어 번역",
+  "feedback": "직전 손님의 일본어에 대한 짧은 한국어 교정. 자연스러웠거나 첫 대사라면 반드시 null"
+}
+
+대화 기록의 assistant 메시지는 당신이 앞서 한 일본어 대사이며 문맥 파악용입니다. 새 응답은 항상 위 JSON으로 만드세요.`;
+}
+
+function parseJSON(text){
+  let t = text.trim().replace(/```json/gi,"").replace(/```/g,"").trim();
+  const s = t.indexOf("{"), e = t.lastIndexOf("}");
+  if(s!==-1 && e!==-1) t = t.slice(s, e+1);
+  return JSON.parse(t);
+}
+
+async function callClaude(apiHist, sc){
+  const res = await fetch("https://api.anthropic.com/v1/messages", {
+    method:"POST",
+    headers:{
+      "Content-Type":"application/json",
+      "x-api-key": apiKey,
+      "anthropic-version":"2023-06-01",
+      "anthropic-dangerous-direct-browser-access":"true"
+    },
+    body: JSON.stringify({ model:MODEL, max_tokens:1000, system:systemPrompt(sc), messages:apiHist })
+  });
+  if(!res.ok){
+    if(res.status===401) throw new Error("API 키가 올바르지 않아요. 다시 확인해 주세요.");
+    throw new Error("응답을 불러오지 못했어요. (오류 " + res.status + ")");
+  }
+  const data = await res.json();
+  const text = (data.content||[]).filter(i=>i.type==="text").map(i=>i.text).join("");
+  return parseJSON(text);
+}
+
+/* ── TTS ── */
+function speak(ja){
+  if(!window.speechSynthesis) return;
+  window.speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(ja);
+  u.lang="ja-JP"; u.rate=0.92;
+  const v = window.speechSynthesis.getVoices().find(v=>v.lang&&v.lang.toLowerCase().startsWith("ja"));
+  if(v) u.voice=v;
+  window.speechSynthesis.speak(u);
+}
+
+/* ── 화면 전환 ── */
+function show(id){
+  ["keyScreen","selectScreen","chatScreen"].forEach(s=>{
+    document.getElementById(s).classList.toggle("hidden", s!==id);
+  });
+}
+
+/* ── 시나리오 목록 렌더 ── */
+function renderScenarios(){
+  const list = document.getElementById("scenarioList");
+  list.innerHTML = "";
+  Object.entries(SCENARIOS).forEach(([key,s])=>{
+    const b = document.createElement("button");
+    b.className = "card-btn";
+    b.innerHTML =
+      `<div class="ico">${s.emoji}</div>
+       <div style="flex:1;">
+         <div class="ja" style="font-weight:700; font-size:17px; color:var(--indigo);">
+           ${s.ja} <span style="font-size:13px; color:var(--mute); font-weight:500;">${s.ko}</span>
+         </div>
+         <div style="font-size:12.5px; color:var(--mute); margin-top:2px;">${s.desc}</div>
+       </div>
+       <div style="color:var(--vermilion); font-size:20px; font-weight:700;">›</div>`;
+    b.onclick = ()=> startScenario(key);
+    list.appendChild(b);
+  });
+}
+
+/* ── 메시지 렌더 ── */
+function renderMessages(){
+  const area = document.getElementById("chatArea");
+  area.innerHTML = "";
+  messages.forEach((m, i)=>{
+    if(m.role==="assistant") area.appendChild(shopEl(m, i));
+    else area.appendChild(userEl(m));
+  });
+  if(loading){
+    const t = document.createElement("div");
+    t.className = "typing msg";
+    t.innerHTML = `<span class="dot"></span><span class="dot" style="animation-delay:.2s"></span><span class="dot" style="animation-delay:.4s"></span>`;
+    area.appendChild(t);
+  }
+  area.scrollTop = area.scrollHeight;
+}
+
+function shopEl(m, i){
+  const wrap = document.createElement("div");
+  wrap.className = "shop msg";
+
+  if(m.feedback){
+    const fb = document.createElement("div");
+    fb.className = "fb";
+    fb.textContent = "✎ " + m.feedback;
+    wrap.appendChild(fb);
+  }
+
+  const bubble = document.createElement("div");
+  bubble.className = "bubble";
+
+  const ja = document.createElement("div");
+  ja.className = "jatext ja";
+  ja.textContent = m.japanese;
+  bubble.appendChild(ja);
+
+  const reveal = document.createElement("div");
+  reveal.className = "reveal";
+  reveal.style.display = m._revealed ? "block" : "none";
+  const pron = document.createElement("div");
+  pron.className = "pron ja"; pron.textContent = m.pronunciation;
+  const trans = document.createElement("div");
+  trans.className = "trans"; trans.textContent = m.translation;
+  reveal.appendChild(pron); reveal.appendChild(trans);
+  bubble.appendChild(reveal);
+
+  const row = document.createElement("div");
+  row.className = "row";
+  const toggle = document.createElement("button");
+  toggle.className = "mini";
+  toggle.textContent = m._revealed ? "숨기기" : "발음·번역 보기";
+  toggle.onclick = ()=>{ m._revealed = !m._revealed; renderMessages(); };
+  const sp = document.createElement("button");
+  sp.className = "mini"; sp.textContent = "🔊 다시 듣기";
+  sp.onclick = ()=> speak(m.japanese);
+  row.appendChild(toggle); row.appendChild(sp);
+  bubble.appendChild(row);
+
+  wrap.appendChild(bubble);
+  return wrap;
+}
+
+function userEl(m){
+  const d = document.createElement("div");
+  d.className = "user msg ja";
+  d.textContent = m.japanese;
+  return d;
+}
+
+/* ── 시나리오 시작 ── */
+async function startScenario(key){
+  scenario = { key, ...SCENARIOS[key] };
+  document.getElementById("hTitle").textContent = scenario.emoji + " " + scenario.ja;
+  document.getElementById("hSub").textContent = scenario.ko + " 회화 연습";
+  messages = []; apiMessages = [];
+  show("chatScreen");
+  loading = true; renderMessages();
+  const initApi = [{ role:"user", content:START_TRIGGER }];
+  try{
+    const r = await callClaude(initApi, scenario);
+    messages.push({ role:"assistant", japanese:r.japanese, pronunciation:r.pronunciation, translation:r.translation, feedback:null, _revealed:false });
+    apiMessages = [...initApi, { role:"assistant", content:r.japanese }];
+    loading = false; renderMessages();
+    if(autoSpeak) setTimeout(()=>speak(r.japanese), 250);
+  }catch(e){
+    loading = false; renderMessages(); chatError(e.message);
+  }
+}
+
+/* ── 전송 ── */
+async function send(){
+  const inp = document.getElementById("chatInput");
+  const text = inp.value.trim();
+  if(!text || loading) return;
+  inp.value = ""; updateSendState();
+  document.getElementById("listening").textContent = "";
+  messages.push({ role:"user", japanese:text });
+  apiMessages.push({ role:"user", content:text });
+  loading = true; renderMessages();
+  try{
+    const r = await callClaude(apiMessages, scenario);
+    messages.push({ role:"assistant", japanese:r.japanese, pronunciation:r.pronunciation, translation:r.translation, feedback:r.feedback||null, _revealed:false });
+    apiMessages.push({ role:"assistant", content:r.japanese });
+    loading = false; renderMessages();
+    if(autoSpeak) setTimeout(()=>speak(r.japanese), 200);
+  }catch(e){
+    loading = false; renderMessages(); chatError(e.message);
+  }
+}
+
+function chatError(msg){
+  const area = document.getElementById("chatArea");
+  const d = document.createElement("div");
+  d.className = "chaterr"; d.textContent = msg;
+  area.appendChild(d); area.scrollTop = area.scrollHeight;
+}
+
+/* ── 음성 인식 (ja-JP 고정) ── */
+const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+function startRec(){
+  if(!SR) return;
+  recog = new SR();
+  recog.lang="ja-JP"; recog.interimResults=true; recog.continuous=false; recog.maxAlternatives=1;
+  const inp = document.getElementById("chatInput");
+  const listening = document.getElementById("listening");
+  recog.onresult = (ev)=>{
+    let fin="", intr="";
+    for(let i=ev.resultIndex; i<ev.results.length; i++){
+      const tr = ev.results[i][0].transcript;
+      if(ev.results[i].isFinal) fin+=tr; else intr+=tr;
+    }
+    if(fin){ inp.value = (inp.value + fin).trim(); updateSendState(); }
+    listening.textContent = intr ? ("🎙 듣는 중… " + intr) : "🎙 듣는 중…";
+  };
+  recog.onerror = ()=> stopRec();
+  recog.onend = ()=>{ recording=false; setMic(); listening.textContent=""; };
+  inp.value=""; updateSendState();
+  recording=true; setMic();
+  listening.textContent = "🎙 듣는 중…";
+  recog.start();
+}
+function stopRec(){ if(recog) recog.stop(); recording=false; setMic(); }
+function setMic(){
+  const mic = document.getElementById("micBtn");
+  mic.classList.toggle("rec", recording);
+  mic.textContent = recording ? "■" : "🎤";
+}
+
+function updateSendState(){
+  const inp = document.getElementById("chatInput");
+  document.getElementById("sendBtn").disabled = loading || !inp.value.trim();
+}
+
+/* ── 이벤트 바인딩 ── */
+document.getElementById("keyBtn").onclick = ()=>{
+  const v = document.getElementById("keyInput").value.trim();
+  const err = document.getElementById("keyErr");
+  if(!v.startsWith("sk-ant-")){
+    err.textContent = "키 형식이 올바르지 않아요. sk-ant- 로 시작하는 키를 넣어주세요.";
+    err.classList.remove("hidden"); return;
+  }
+  err.classList.add("hidden");
+  apiKey = v;
+  document.getElementById("keyInput").value = "";
+  renderScenarios();
+  show("selectScreen");
+};
+document.getElementById("keyInput").addEventListener("keydown", e=>{ if(e.key==="Enter") document.getElementById("keyBtn").click(); });
+
+document.getElementById("backBtn").onclick = ()=>{ if(window.speechSynthesis) window.speechSynthesis.cancel(); show("selectScreen"); };
+document.getElementById("restartBtn").onclick = ()=> startScenario(scenario.key);
+document.getElementById("speakToggle").onclick = ()=>{
+  autoSpeak = !autoSpeak;
+  const b = document.getElementById("speakToggle");
+  b.classList.toggle("on", autoSpeak);
+  b.textContent = autoSpeak ? "🔊 자동읽기" : "🔇 자동읽기";
+};
+document.getElementById("micBtn").onclick = ()=> recording ? stopRec() : startRec();
+document.getElementById("sendBtn").onclick = send;
+document.getElementById("chatInput").addEventListener("input", updateSendState);
+document.getElementById("chatInput").addEventListener("keydown", e=>{ if(e.key==="Enter") send(); });
+
+/* 음성 미지원 안내 */
+if(!SR){
+  document.getElementById("micBtn").classList.add("hidden");
+  const n = document.getElementById("micNote");
+  n.classList.remove("hidden");
+  n.textContent = "이 브라우저는 음성 입력을 지원하지 않아요. Chrome에서 열면 마이크를 쓸 수 있어요.";
+}
+if(window.speechSynthesis) window.speechSynthesis.getVoices();
+</script>
+</body>
+</html>
